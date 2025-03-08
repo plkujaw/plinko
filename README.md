@@ -55,4 +55,4 @@ If you received the `plinko-game.zip` file:
 - Multiplier slots with different values
 - Score tracking
 - Boundary physics
-- Visual effects for scoring
+- Visual effects for scoring# plinko
