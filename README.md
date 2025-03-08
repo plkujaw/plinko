@@ -56,3 +56,4 @@ If you received the `plinko-game.zip` file:
 - Score tracking
 - Boundary physics
 - Visual effects for scoring# plinko
+# plinko
