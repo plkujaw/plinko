@@ -1,38 +1,42 @@
 import React, { useEffect, useRef, useState } from 'react';
+import GameControls from './GameControls';
 
-const PIN_RADIUS = 5;
-const BALL_RADIUS = 10;
-const GRAVITY = 0.1;
-const PIN_BOUNCE_DAMPING = 0.6;
-const PIN_SPACING = 40;
-const ROW_SPACING = 40;
-const SLOT_HEIGHT = 30;
-const START_Y = 70;
+// Base dimensions for calculations
+const BASE_PIN_RADIUS = 5;
+const BASE_BALL_RADIUS = 10;
+const BASE_PIN_SPACING = 40;
+const BASE_ROW_SPACING = 40;
+const BASE_SLOT_HEIGHT = 30;
+const BASE_START_Y = 70;
 const BOUNDARY_OFFSET = 0.2;
 
-// Calculate dimensions based on pin layout
+// Game constants
+const GRAVITY = 0.1;
+const PIN_BOUNCE_DAMPING = 0.6;
 const TOP_ROW_PINS = 3;
 const PIN_ROWS = 15;
 const BOTTOM_ROW_PINS = TOP_ROW_PINS + PIN_ROWS - 1;
-const GAME_WIDTH = Math.max((BOTTOM_ROW_PINS - 1) * PIN_SPACING, (TOP_ROW_PINS - 1) * PIN_SPACING);
+
+// Calculate dimensions based on pin layout
+const GAME_WIDTH = Math.max((BOTTOM_ROW_PINS - 1) * BASE_PIN_SPACING, (TOP_ROW_PINS - 1) * BASE_PIN_SPACING);
 const CANVAS_WIDTH = GAME_WIDTH * (1 + BOUNDARY_OFFSET * 2);
-const CANVAS_HEIGHT = START_Y + PIN_ROWS * ROW_SPACING + SLOT_HEIGHT;
+const CANVAS_HEIGHT = BASE_START_Y + PIN_ROWS * BASE_ROW_SPACING + BASE_SLOT_HEIGHT;
 
 // Calculate boundary points to match triangle shape with vertical top section
 const LEFT_BOUNDARY = [
-  { x: CANVAS_WIDTH / 2 - ((TOP_ROW_PINS - 1) * PIN_SPACING) / 2 - PIN_SPACING, y: 0 },
-  { x: CANVAS_WIDTH / 2 - ((TOP_ROW_PINS - 1) * PIN_SPACING) / 2 - PIN_SPACING, y: START_Y },
+  { x: CANVAS_WIDTH / 2 - ((TOP_ROW_PINS - 1) * BASE_PIN_SPACING) / 2 - BASE_PIN_SPACING / 2, y: 0 },
+  { x: CANVAS_WIDTH / 2 - ((TOP_ROW_PINS - 1) * BASE_PIN_SPACING) / 2 - BASE_PIN_SPACING / 2, y: BASE_START_Y },
   {
-    x: CANVAS_WIDTH / 2 - ((BOTTOM_ROW_PINS - 1) * PIN_SPACING) / 2 - PIN_SPACING,
-    y: START_Y + (PIN_ROWS - 1) * ROW_SPACING,
+    x: CANVAS_WIDTH / 2 - ((BOTTOM_ROW_PINS - 1) * BASE_PIN_SPACING) / 2 - BASE_PIN_SPACING / 2,
+    y: BASE_START_Y + (PIN_ROWS - 1) * BASE_ROW_SPACING,
   },
 ];
 const RIGHT_BOUNDARY = [
-  { x: CANVAS_WIDTH / 2 + ((TOP_ROW_PINS - 1) * PIN_SPACING) / 2 + PIN_SPACING, y: 0 },
-  { x: CANVAS_WIDTH / 2 + ((TOP_ROW_PINS - 1) * PIN_SPACING) / 2 + PIN_SPACING, y: START_Y },
+  { x: CANVAS_WIDTH / 2 + ((TOP_ROW_PINS - 1) * BASE_PIN_SPACING) / 2 + BASE_PIN_SPACING / 2, y: 0 },
+  { x: CANVAS_WIDTH / 2 + ((TOP_ROW_PINS - 1) * BASE_PIN_SPACING) / 2 + BASE_PIN_SPACING / 2, y: BASE_START_Y },
   {
-    x: CANVAS_WIDTH / 2 + ((BOTTOM_ROW_PINS - 1) * PIN_SPACING) / 2 + PIN_SPACING,
-    y: START_Y + (PIN_ROWS - 1) * ROW_SPACING,
+    x: CANVAS_WIDTH / 2 + ((BOTTOM_ROW_PINS - 1) * BASE_PIN_SPACING) / 2 + BASE_PIN_SPACING / 2,
+    y: BASE_START_Y + (PIN_ROWS - 1) * BASE_ROW_SPACING,
   },
 ];
 
@@ -73,7 +77,7 @@ const activeSlots = new Set();
 
 function drawPin(ctx, x, y) {
   ctx.beginPath();
-  ctx.arc(x, y, PIN_RADIUS, 0, Math.PI * 2);
+  ctx.arc(x, y, BASE_PIN_RADIUS, 0, Math.PI * 2);
   ctx.fillStyle = '#FFD700';
   ctx.fill();
   ctx.closePath();
@@ -81,7 +85,7 @@ function drawPin(ctx, x, y) {
 
 function drawBall(ctx, x, y) {
   ctx.beginPath();
-  ctx.arc(x, y, BALL_RADIUS, 0, Math.PI * 2);
+  ctx.arc(x, y, BASE_BALL_RADIUS, 0, Math.PI * 2);
   ctx.fillStyle = '#FF4444';
   ctx.fill();
   ctx.closePath();
@@ -90,7 +94,7 @@ function drawBall(ctx, x, y) {
 function drawBoundaries(ctx) {
   // Draw left boundary - only the angled part
   ctx.beginPath();
-  ctx.moveTo(LEFT_BOUNDARY[1].x, LEFT_BOUNDARY[1].y); // Start from START_Y
+  ctx.moveTo(LEFT_BOUNDARY[1].x, LEFT_BOUNDARY[1].y);
   ctx.lineTo(LEFT_BOUNDARY[2].x, LEFT_BOUNDARY[2].y);
   ctx.strokeStyle = '#34495E';
   ctx.lineWidth = 4;
@@ -98,19 +102,17 @@ function drawBoundaries(ctx) {
 
   // Draw right boundary - only the angled part
   ctx.beginPath();
-  ctx.moveTo(RIGHT_BOUNDARY[1].x, RIGHT_BOUNDARY[1].y); // Start from START_Y
+  ctx.moveTo(RIGHT_BOUNDARY[1].x, RIGHT_BOUNDARY[1].y);
   ctx.lineTo(RIGHT_BOUNDARY[2].x, RIGHT_BOUNDARY[2].y);
   ctx.stroke();
 }
 
 function drawSlots(ctx) {
-  const slotWidth = PIN_SPACING * 0.8; // Made slots narrower
-  const slotGap = PIN_SPACING * 0.2; // Increased gap between slots
-  const startX =
-    (CANVAS_WIDTH - (SLOTS.length * slotWidth + (SLOTS.length - 1) * slotGap)) /
-    2;
-  const lastRowY = START_Y + (PIN_ROWS - 1) * ROW_SPACING;
-  const slotY = lastRowY + ROW_SPACING / 2;
+  const slotWidth = BASE_PIN_SPACING * 0.8;
+  const slotGap = BASE_PIN_SPACING * 0.2;
+  const startX = (CANVAS_WIDTH - (SLOTS.length * slotWidth + (SLOTS.length - 1) * slotGap)) / 2;
+  const lastRowY = BASE_START_Y + (PIN_ROWS - 1) * BASE_ROW_SPACING;
+  const slotY = lastRowY + BASE_ROW_SPACING / 2;
 
   SLOTS.forEach((slot, index) => {
     const x = startX + index * (slotWidth + slotGap);
@@ -123,11 +125,11 @@ function drawSlots(ctx) {
       ctx.save();
       ctx.shadowColor = slot.color;
       ctx.shadowBlur = 20;
-      ctx.fillRect(x, slotY, slotWidth, SLOT_HEIGHT);
-      ctx.fillRect(x, slotY, slotWidth, SLOT_HEIGHT);
+      ctx.fillRect(x, slotY, slotWidth, BASE_SLOT_HEIGHT);
+      ctx.fillRect(x, slotY, slotWidth, BASE_SLOT_HEIGHT);
       ctx.restore();
     } else {
-      ctx.fillRect(x, slotY, slotWidth, SLOT_HEIGHT);
+      ctx.fillRect(x, slotY, slotWidth, BASE_SLOT_HEIGHT);
     }
 
     // Draw multiplier text
@@ -138,7 +140,7 @@ function drawSlots(ctx) {
     ctx.fillText(
       `${slot.multiplier}x`,
       x + slotWidth / 2,
-      slotY + SLOT_HEIGHT / 2
+      slotY + BASE_SLOT_HEIGHT / 2
     );
   });
 }
@@ -149,15 +151,15 @@ function distance(x1, y1, x2, y2) {
 
 // Check if a point is inside the triangular boundary
 function isInsideBoundary(x, y) {
-  if (y > CANVAS_HEIGHT - SLOT_HEIGHT) return true;
+  if (y > CANVAS_HEIGHT - BASE_SLOT_HEIGHT) return true;
 
-  if (y < START_Y) {
+  if (y < BASE_START_Y) {
     // Above the triangle, use vertical boundaries
     return x >= LEFT_BOUNDARY[0].x && x <= RIGHT_BOUNDARY[0].x;
   }
 
   // Inside the triangle section
-  const progress = (y - START_Y) / (CANVAS_HEIGHT - SLOT_HEIGHT - START_Y);
+  const progress = (y - BASE_START_Y) / (CANVAS_HEIGHT - BASE_SLOT_HEIGHT - BASE_START_Y);
   const leftX =
     LEFT_BOUNDARY[1].x + (LEFT_BOUNDARY[2].x - LEFT_BOUNDARY[1].x) * progress;
   const rightX =
@@ -167,31 +169,48 @@ function isInsideBoundary(x, y) {
 }
 
 export default function PlinkoGame() {
+  const containerRef = useRef(null);
   const canvasRef = useRef(null);
   const animationFrameRef = useRef(null);
   const ballsRef = useRef([]);
   const pinsRef = useRef([]);
+  const [scale, setScale] = useState(1);
   const [score, setScore] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [hasBall, setHasBall] = useState(false);
   const [dropForce, setDropForce] = useState(0);
-  const [dragPosition, setDragPosition] = useState({
-    x: LEFT_BOUNDARY[0].x + (RIGHT_BOUNDARY[0].x - LEFT_BOUNDARY[0].x) / 2,
-    y: BALL_RADIUS * 2
-  });
+  const [dragPosition, setDragPosition] = useState({ x: CANVAS_WIDTH / 2, y: BASE_BALL_RADIUS * 2 });
   const [isShaking, setIsShaking] = useState(0);
+
+  // Add resize handler
+  useEffect(() => {
+    function handleResize() {
+      if (containerRef.current) {
+        const containerWidth = containerRef.current.clientWidth;
+        const containerHeight = containerRef.current.clientHeight;
+        const scaleX = containerWidth / CANVAS_WIDTH;
+        const scaleY = containerHeight / CANVAS_HEIGHT;
+        const newScale = Math.min(scaleX, scaleY, 1); // Don't scale up beyond original size
+        setScale(newScale);
+      }
+    }
+
+    handleResize(); // Initial calculation
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   function getMousePos(canvas, evt) {
     const rect = canvas.getBoundingClientRect();
     return {
-      x: evt.clientX - rect.left,
-      y: evt.clientY - rect.top
+      x: (evt.clientX - rect.left) / scale,
+      y: (evt.clientY - rect.top) / scale
     };
   }
 
   function isOverBall(pos) {
     return hasBall &&
-      distance(pos.x, pos.y, dragPosition.x, dragPosition.y) <= BALL_RADIUS;
+      distance(pos.x, pos.y, dragPosition.x, dragPosition.y) <= BASE_BALL_RADIUS;
   }
 
   function handleMouseMove(e) {
@@ -206,16 +225,16 @@ export default function PlinkoGame() {
 
     if (isDragging) {
       // Calculate the allowed x-range at the current y position
-      const progress = (pos.y - START_Y) / (CANVAS_HEIGHT - SLOT_HEIGHT - START_Y);
+      const progress = (pos.y - BASE_START_Y) / (CANVAS_HEIGHT - BASE_SLOT_HEIGHT - BASE_START_Y);
       const leftX = LEFT_BOUNDARY[0].x + (LEFT_BOUNDARY[1].x - LEFT_BOUNDARY[0].x) * progress;
       const rightX = RIGHT_BOUNDARY[0].x + (RIGHT_BOUNDARY[1].x - RIGHT_BOUNDARY[0].x) * progress;
 
       // Constrain horizontal movement to triangle bounds and vertical to top area
       const x = Math.max(
-        leftX + BALL_RADIUS,
-        Math.min(rightX - BALL_RADIUS, pos.x)
+        leftX + BASE_BALL_RADIUS,
+        Math.min(rightX - BASE_BALL_RADIUS, pos.x)
       );
-      const y = Math.max(BALL_RADIUS, Math.min(START_Y - BALL_RADIUS, pos.y));
+      const y = Math.max(BASE_BALL_RADIUS, Math.min(BASE_START_Y - BASE_BALL_RADIUS, pos.y));
 
       setDragPosition({ x, y });
     }
@@ -224,7 +243,7 @@ export default function PlinkoGame() {
   function handleMouseDown(e) {
     if (!hasBall) return;
     const pos = getMousePos(canvasRef.current, e);
-    if (pos.y < START_Y && isOverBall(pos)) {
+    if (pos.y < BASE_START_Y && isOverBall(pos)) {
       setIsDragging(true);
       setDragPosition(pos);
       canvasRef.current.style.cursor = 'grabbing';
@@ -259,7 +278,7 @@ export default function PlinkoGame() {
     // Reset ball position, availability, and force
     setDragPosition({
       x: LEFT_BOUNDARY[0].x + (RIGHT_BOUNDARY[0].x - LEFT_BOUNDARY[0].x) / 2,
-      y: BALL_RADIUS * 2
+      y: BASE_BALL_RADIUS * 2
     });
     setHasBall(false);
     setDropForce(0);
@@ -271,13 +290,13 @@ export default function PlinkoGame() {
   }
 
   function checkSlotCollision(ball) {
-    const lastRowY = START_Y + (PIN_ROWS - 1) * ROW_SPACING;
-    const slotY = lastRowY + ROW_SPACING / 2;
+    const lastRowY = BASE_START_Y + (PIN_ROWS - 1) * BASE_ROW_SPACING;
+    const slotY = lastRowY + BASE_ROW_SPACING / 2;
 
     // Check if ball is at slot level and hasn't scored yet
-    if (ball.y >= slotY && ball.y <= slotY + SLOT_HEIGHT && !ball.scored) {
-      const slotWidth = PIN_SPACING * 0.8;
-      const slotGap = PIN_SPACING * 0.2;
+    if (ball.y >= slotY && ball.y <= slotY + BASE_SLOT_HEIGHT && !ball.scored) {
+      const slotWidth = BASE_PIN_SPACING * 0.8;
+      const slotGap = BASE_PIN_SPACING * 0.2;
       const startX = (CANVAS_WIDTH - (SLOTS.length * slotWidth + (SLOTS.length - 1) * slotGap)) / 2;
 
       const relativeX = ball.x - startX;
@@ -304,7 +323,7 @@ export default function PlinkoGame() {
     }
 
     // Deactivate ball when it reaches bottom of board
-    if (ball.y > CANVAS_HEIGHT + BALL_RADIUS) {
+    if (ball.y > CANVAS_HEIGHT + BASE_BALL_RADIUS) {
       ball.active = false;
     }
   }
@@ -337,13 +356,17 @@ export default function PlinkoGame() {
     setDropForce(0);
     setDragPosition({
       x: LEFT_BOUNDARY[0].x + (RIGHT_BOUNDARY[0].x - LEFT_BOUNDARY[0].x) / 2,
-      y: BALL_RADIUS * 2
+      y: BASE_BALL_RADIUS * 2
     });
   }
 
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
+
+    // Set fixed canvas size
+    canvas.width = CANVAS_WIDTH;
+    canvas.height = CANVAS_HEIGHT;
 
     // Add event listeners for drag functionality
     canvas.addEventListener('mousedown', handleMouseDown);
@@ -355,12 +378,12 @@ export default function PlinkoGame() {
     const pins = [];
     for (let row = 0; row < PIN_ROWS; row++) {
       const pinsInRow = TOP_ROW_PINS + row;
-      const rowWidth = (pinsInRow - 1) * PIN_SPACING;
+      const rowWidth = (pinsInRow - 1) * BASE_PIN_SPACING;
       const startX = (CANVAS_WIDTH - rowWidth) / 2;
 
       for (let pin = 0; pin < pinsInRow; pin++) {
-        const x = startX + pin * PIN_SPACING;
-        const y = START_Y + row * ROW_SPACING;
+        const x = startX + pin * BASE_PIN_SPACING;
+        const y = BASE_START_Y + row * BASE_ROW_SPACING;
         pins.push({ x, y });
       }
     }
@@ -377,7 +400,7 @@ export default function PlinkoGame() {
       // Check pin collisions
       for (const pin of pinsRef.current) {
         const dist = distance(newX, newY, pin.x, pin.y);
-        if (dist < BALL_RADIUS + PIN_RADIUS) {
+        if (dist < BASE_BALL_RADIUS + BASE_PIN_RADIUS) {
           const angle = Math.atan2(newY - pin.y, newX - pin.x);
           const speed = Math.sqrt(ball.vx ** 2 + ball.vy ** 2);
 
@@ -385,8 +408,8 @@ export default function PlinkoGame() {
           ball.vx = Math.cos(angle) * speed * PIN_BOUNCE_DAMPING;
           ball.vy = Math.sin(angle) * speed * PIN_BOUNCE_DAMPING;
 
-          ball.x = pin.x + Math.cos(angle) * (BALL_RADIUS + PIN_RADIUS);
-          ball.y = pin.y + Math.sin(angle) * (BALL_RADIUS + PIN_RADIUS);
+          ball.x = pin.x + Math.cos(angle) * (BASE_BALL_RADIUS + BASE_PIN_RADIUS);
+          ball.y = pin.y + Math.sin(angle) * (BASE_BALL_RADIUS + BASE_PIN_RADIUS);
           return;
         }
       }
@@ -394,7 +417,7 @@ export default function PlinkoGame() {
       // Check boundary collisions
       if (!isInsideBoundary(newX, newY)) {
         // Calculate x position on boundaries at current y
-        const progress = (newY - START_Y) / (CANVAS_HEIGHT - SLOT_HEIGHT - START_Y);
+        const progress = (newY - BASE_START_Y) / (CANVAS_HEIGHT - BASE_SLOT_HEIGHT - BASE_START_Y);
         const leftX = LEFT_BOUNDARY[1].x + (LEFT_BOUNDARY[2].x - LEFT_BOUNDARY[1].x) * progress;
         const rightX = RIGHT_BOUNDARY[1].x + (RIGHT_BOUNDARY[2].x - RIGHT_BOUNDARY[1].x) * progress;
 
@@ -405,7 +428,7 @@ export default function PlinkoGame() {
         }
 
         // Keep the ball exactly on the boundary
-        ball.x = Math.max(leftX + BALL_RADIUS, Math.min(rightX - BALL_RADIUS, newX));
+        ball.x = Math.max(leftX + BASE_BALL_RADIUS, Math.min(rightX - BASE_BALL_RADIUS, newX));
         ball.y = newY;
       } else {
         ball.x = newX;
@@ -416,9 +439,9 @@ export default function PlinkoGame() {
     }
 
     function draw() {
-      ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.fillStyle = '#2C3E50';
-      ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       drawBoundaries(ctx);
       drawSlots(ctx);
@@ -434,7 +457,7 @@ export default function PlinkoGame() {
 
       const remainingBalls = [];
       for (const ball of ballsRef.current) {
-        if (ball.y <= CANVAS_HEIGHT + BALL_RADIUS) {
+        if (ball.y <= CANVAS_HEIGHT + BASE_BALL_RADIUS) {
           updateBall(ball);
           drawBall(ctx, ball.x, ball.y);
           remainingBalls.push(ball);
@@ -451,7 +474,6 @@ export default function PlinkoGame() {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
-      // Clean up event listeners
       canvas.removeEventListener('mousedown', handleMouseDown);
       canvas.removeEventListener('mousemove', handleMouseMove);
       canvas.removeEventListener('mouseup', handleMouseUp);
@@ -460,155 +482,37 @@ export default function PlinkoGame() {
   }, [score, isDragging, dragPosition, hasBall]);
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-        backgroundColor: '#1a1a1a',
-        padding: '10px',
-        width: '100%',
-        height: '100%',
-        gap: '20px',
-        overflow: 'auto',
-        boxSizing: 'border-box'
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '10px',
-          minWidth: '220px',
-        }}
-      >
-        <button
-          onClick={addBall}
-          style={{
-            padding: '10px 20px',
-            fontSize: '16px',
-            backgroundColor: '#9C27B0',
-            color: 'white',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: 'pointer',
-            whiteSpace: 'nowrap',
-            opacity: hasBall ? 0.5 : 1,
-          }}
-          disabled={hasBall}
-        >
-          Add Ball
-        </button>
+    <div className="flex flex-col md:flex-row gap-6">
+      <GameControls
+        hasBall={hasBall}
+        setHasBall={setHasBall}
+        dropForce={dropForce}
+        setDropForce={setDropForce}
+        dropBall={dropBall}
+        isDragging={isDragging}
+        shakeBoard={shakeBoard}
+        resetGame={resetGame}
+        score={score}
+      />
+
+      <div className="flex-1 flex items-center justify-center overflow-hidden" ref={containerRef}>
         <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '5px',
-          padding: '10px',
-          backgroundColor: hasBall ? '#2C3E50' : '#1a2633',
-          borderRadius: '5px',
-          opacity: hasBall ? 1 : 0.5,
-          transition: 'all 0.3s ease'
+          transform: `scale(${scale})`,
+          transformOrigin: 'center center',
+          width: CANVAS_WIDTH,
+          height: CANVAS_HEIGHT
         }}>
-          <label style={{
-            color: 'white',
-            fontSize: '14px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}>
-            Drop Force: {dropForce.toFixed(1)}
-            <span style={{
-              fontSize: '12px',
-              opacity: 0.7,
-              marginLeft: '5px'
-            }}>
-              {dropForce === 0 ? '(Natural)' : dropForce < 5 ? '(Gentle)' : dropForce < 10 ? '(Medium)' : '(Hard)'}
-            </span>
-          </label>
-          <input
-            type="range"
-            min="0"
-            max="15"
-            step="0.1"
-            value={dropForce}
-            onChange={(e) => hasBall && setDropForce(parseFloat(e.target.value))}
-            style={{
-              width: '100%',
-              accentColor: '#4CAF50',
-              cursor: hasBall ? 'pointer' : 'not-allowed',
-              opacity: hasBall ? 1 : 0.7
-            }}
-          />
-        </div>
-        <button
-          onClick={dropBall}
-          style={{
-            padding: '10px 20px',
-            fontSize: '16px',
-            backgroundColor: '#4CAF50',
-            color: 'white',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: 'pointer',
-            whiteSpace: 'nowrap',
-            opacity: hasBall ? 1 : 0.5,
-          }}
-          disabled={!hasBall}
-        >
-          Drop Ball
-        </button>
-        <button
-          onClick={shakeBoard}
-          style={{
-            padding: '10px 20px',
-            fontSize: '16px',
-            backgroundColor: '#2196F3',
-            color: 'white',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: 'pointer',
-            whiteSpace: 'nowrap'
-          }}
-        >
-          Shake Board
-        </button>
-        <button
-          onClick={resetGame}
-          style={{
-            padding: '10px 20px',
-            fontSize: '16px',
-            backgroundColor: '#FF5722',
-            color: 'white',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: 'pointer',
-            whiteSpace: 'nowrap'
-          }}
-        >
-          Reset Game
-        </button>
-        <div
-          style={{
-            color: 'white',
-            fontSize: '20px',
-            fontWeight: 'bold',
-          }}
-        >
-          Score: {score.toFixed(1)}
-        </div>
-      </div>
-      <div style={{
-        padding: '10px',
-        boxSizing: 'border-box',
-        WebkitOverflowScrolling: 'touch',
-        transform: isShaking ? `translateX(${isShaking * 4}px)` : 'none',
-        transition: 'transform 50ms'
-      }}>
-        <div>
           <canvas
             ref={canvasRef}
             width={CANVAS_WIDTH}
             height={CANVAS_HEIGHT}
+            onMouseMove={handleMouseMove}
+            onMouseDown={handleMouseDown}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+            className={`bg-gray-800 rounded-xl shadow-xl transform ${
+              isShaking === 1 ? 'translate-x-0.5' : isShaking === -1 ? '-translate-x-0.5' : ''
+            }`}
           />
         </div>
       </div>
