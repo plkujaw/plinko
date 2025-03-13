@@ -61,7 +61,7 @@ export default function GameControls({
           >
             Reset Game
           </button>
-          <div className="text-xs md:text-lg font-bold text-white text-center p-3 bg-gray-700/50 backdrop-blur rounded-xl flex justify-center">
+          <div className="text-xs md:text-lg font-bold text-white text-center p-3 bg-gray-700/50 backdrop-blur rounded-xl flex items-center justify-center">
             Score: {score}
           </div>
         </div>
