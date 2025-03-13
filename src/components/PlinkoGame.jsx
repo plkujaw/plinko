@@ -11,8 +11,8 @@ const BASE_START_Y = 70;
 const BOUNDARY_OFFSET = 0.2;
 
 // Game constants
-const GRAVITY = 0.2;
-const PIN_BOUNCE_DAMPING = 0.7;
+const GRAVITY = 0.15;
+const PIN_BOUNCE_DAMPING = 0.6;
 const TOP_ROW_PINS = 3;
 const PIN_ROWS = 15;
 const BOTTOM_ROW_PINS = TOP_ROW_PINS + PIN_ROWS - 1;
@@ -334,8 +334,8 @@ export default function PlinkoGame() {
       if (ball.active) {
         return {
           ...ball,
-          vx: ball.vx + (Math.random() - 0.5) * 8,
-          vy: Math.max(ball.vy + Math.random() * 4, 1)
+          vx: ball.vx + (Math.random() - 0.5) * 4, // Increased horizontal shake
+          vy: Math.max(ball.vy + Math.random() * 2, 0.5)
         };
       }
       return ball;
@@ -501,7 +501,8 @@ export default function PlinkoGame() {
           transformOrigin: 'top center',
           width: CANVAS_WIDTH,
           height: CANVAS_HEIGHT,
-          marginBottom: `-${(1 - scale) * CANVAS_HEIGHT}px`
+          marginBottom: `-${(1 - scale) * CANVAS_HEIGHT}px`,
+          touchAction: 'none' // Prevent scrolling while keeping touch events
         }}>
           <canvas
             ref={canvasRef}
@@ -537,6 +538,7 @@ export default function PlinkoGame() {
                 preventDefault: () => {}
               });
             }}
+            style={{ touchAction: 'none' }} // Also prevent scrolling on the canvas itself
             className={`bg-gray-800 rounded-xl shadow-xl transform ${
               isShaking === 1 ? 'translate-x-0.5' : isShaking === -1 ? '-translate-x-0.5' : ''
             }`}
