@@ -11,8 +11,8 @@ const BASE_START_Y = 70;
 const BOUNDARY_OFFSET = 0.2;
 
 // Game constants
-const GRAVITY = 0.1;
-const PIN_BOUNCE_DAMPING = 0.6;
+const GRAVITY = 0.2;
+const PIN_BOUNCE_DAMPING = 0.7;
 const TOP_ROW_PINS = 3;
 const PIN_ROWS = 15;
 const BOTTOM_ROW_PINS = TOP_ROW_PINS + PIN_ROWS - 1;
@@ -268,8 +268,8 @@ export default function PlinkoGame() {
       id: Date.now(),
       x: dragPosition.x,
       y: dragPosition.y,
-      vx: (Math.random() - 0.5) * dropForce * 0.5, // Add some random horizontal velocity based on force
-      vy: dropForce * 0.5, // Initial downward velocity based on force
+      vx: (Math.random() - 0.5) * dropForce,
+      vy: dropForce,
       active: true,
       scored: false,
     };
@@ -334,8 +334,8 @@ export default function PlinkoGame() {
       if (ball.active) {
         return {
           ...ball,
-          vx: ball.vx + (Math.random() - 0.5) * 4, // Increased horizontal shake
-          vy: Math.max(ball.vy + Math.random() * 2, 0.5)
+          vx: ball.vx + (Math.random() - 0.5) * 8,
+          vy: Math.max(ball.vy + Math.random() * 4, 1)
         };
       }
       return ball;
