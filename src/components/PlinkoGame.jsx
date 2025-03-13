@@ -497,7 +497,7 @@ export default function PlinkoGame() {
       />
 
       <div
-        className="flex-1 flex items-start justify-center overflow-hidden bg-gray-800 rounded-xl shadow-xl"
+        className="flex-1 flex items-center justify-center overflow-hidden bg-gray-800 rounded-xl shadow-xl"
         ref={containerRef}
       >
         <div
