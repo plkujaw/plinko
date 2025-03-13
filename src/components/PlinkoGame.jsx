@@ -495,12 +495,13 @@ export default function PlinkoGame() {
         score={score}
       />
 
-      <div className="flex-1 flex items-center justify-center overflow-hidden" ref={containerRef}>
+      <div className="flex-1 flex items-start justify-center overflow-hidden" ref={containerRef}>
         <div style={{
           transform: `scale(${scale})`,
-          transformOrigin: 'center center',
+          transformOrigin: 'top center',
           width: CANVAS_WIDTH,
-          height: CANVAS_HEIGHT
+          height: CANVAS_HEIGHT,
+          marginBottom: `-${(1 - scale) * CANVAS_HEIGHT}px`
         }}>
           <canvas
             ref={canvasRef}
@@ -510,6 +511,32 @@ export default function PlinkoGame() {
             onMouseDown={handleMouseDown}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
+            onTouchMove={(e) => {
+              e.preventDefault();
+              const touch = e.touches[0];
+              const rect = canvasRef.current.getBoundingClientRect();
+              handleMouseMove({
+                clientX: touch.clientX,
+                clientY: touch.clientY,
+                preventDefault: () => {}
+              });
+            }}
+            onTouchStart={(e) => {
+              e.preventDefault();
+              const touch = e.touches[0];
+              const rect = canvasRef.current.getBoundingClientRect();
+              handleMouseDown({
+                clientX: touch.clientX,
+                clientY: touch.clientY,
+                preventDefault: () => {}
+              });
+            }}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              handleMouseUp({
+                preventDefault: () => {}
+              });
+            }}
             className={`bg-gray-800 rounded-xl shadow-xl transform ${
               isShaking === 1 ? 'translate-x-0.5' : isShaking === -1 ? '-translate-x-0.5' : ''
             }`}
