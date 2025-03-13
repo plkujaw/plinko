@@ -440,8 +440,9 @@ export default function PlinkoGame() {
 
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = '#2C3E50';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Removed the background color fill
+      // ctx.fillStyle = '#2C3E50';
+      // ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       drawBoundaries(ctx);
       drawSlots(ctx);
@@ -495,15 +496,20 @@ export default function PlinkoGame() {
         score={score}
       />
 
-      <div className="flex-1 flex items-start justify-center overflow-hidden" ref={containerRef}>
-        <div style={{
-          transform: `scale(${scale})`,
-          transformOrigin: 'top center',
-          width: CANVAS_WIDTH,
-          height: CANVAS_HEIGHT,
-          marginBottom: `-${(1 - scale) * CANVAS_HEIGHT}px`,
-          touchAction: 'none' // Prevent scrolling while keeping touch events
-        }}>
+      <div
+        className="flex-1 flex items-start justify-center overflow-hidden bg-gray-800 rounded-xl shadow-xl"
+        ref={containerRef}
+      >
+        <div
+          style={{
+            transform: `scale(${scale})`,
+            transformOrigin: 'top center',
+            width: CANVAS_WIDTH,
+            height: CANVAS_HEIGHT,
+            marginBottom: `-${(1 - scale) * CANVAS_HEIGHT}px`,
+            touchAction: 'none', // Prevent scrolling while keeping touch events
+          }}
+        >
           <canvas
             ref={canvasRef}
             width={CANVAS_WIDTH}
@@ -519,7 +525,7 @@ export default function PlinkoGame() {
               handleMouseMove({
                 clientX: touch.clientX,
                 clientY: touch.clientY,
-                preventDefault: () => {}
+                preventDefault: () => {},
               });
             }}
             onTouchStart={(e) => {
@@ -529,18 +535,22 @@ export default function PlinkoGame() {
               handleMouseDown({
                 clientX: touch.clientX,
                 clientY: touch.clientY,
-                preventDefault: () => {}
+                preventDefault: () => {},
               });
             }}
             onTouchEnd={(e) => {
               e.preventDefault();
               handleMouseUp({
-                preventDefault: () => {}
+                preventDefault: () => {},
               });
             }}
             style={{ touchAction: 'none' }} // Also prevent scrolling on the canvas itself
-            className={`bg-gray-800 rounded-xl shadow-xl transform ${
-              isShaking === 1 ? 'translate-x-0.5' : isShaking === -1 ? '-translate-x-0.5' : ''
+            className={`transform ${
+              isShaking === 1
+                ? 'translate-x-0.5'
+                : isShaking === -1
+                ? '-translate-x-0.5'
+                : ''
             }`}
           />
         </div>
