@@ -11,8 +11,8 @@ const BASE_START_Y = 70;
 const BOUNDARY_OFFSET = 0.2;
 
 // Game constants
-const GRAVITY = 0.15;
-const PIN_BOUNCE_DAMPING = 0.6;
+const GRAVITY = 0.2;
+const PIN_BOUNCE_DAMPING = 0.5;
 const TOP_ROW_PINS = 3;
 const PIN_ROWS = 15;
 const BOTTOM_ROW_PINS = TOP_ROW_PINS + PIN_ROWS - 1;
